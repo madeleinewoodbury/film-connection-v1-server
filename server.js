@@ -9,11 +9,16 @@ dotenv.config({ path: './config/config.env' });
 connectDB();
 
 // Route files
+const users = require('./routes/users');
 const movies = require('./routes/movies');
 
 const app = express();
 
+// Body parser
+app.use(express.json());
+
 // Mount routers
+app.use('/api/v1/users', users);
 app.use('/api/v1/movies', movies);
 
 const PORT = process.env.PORT;
