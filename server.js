@@ -9,15 +9,17 @@ dotenv.config({ path: './config/config.env' });
 connectDB();
 
 // Route files
+const auth = require('./routes/auth');
 const users = require('./routes/users');
 const movies = require('./routes/movies');
 
 const app = express();
 
-// Body parser
-app.use(express.json());
+// Init Middleware
+app.use(express.json({ extended: false }));
 
 // Mount routers
+app.use('/api/v1/auth', auth);
 app.use('/api/v1/users', users);
 app.use('/api/v1/movies', movies);
 
