@@ -22,7 +22,7 @@ router.get('/:title', async (req, res) => {
 });
 
 // @desc    Get single movie by id
-// @route   GET /api/v1/movies/:id
+// @route   GET /api/v1/movies/movie/:id
 // @access  Public
 router.get('/movie/:id', async (req, res) => {
   const response = await axios.get('http://www.omdbapi.com', {
