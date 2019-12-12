@@ -12,16 +12,18 @@ connectDB();
 const auth = require('./routes/auth');
 const users = require('./routes/users');
 const movies = require('./routes/movies');
+const collections = require('./routes/collections');
 
 const app = express();
 
 // Init Middleware
-app.use(express.json({ extended: false }));
+app.use(express.json());
 
 // Mount routers
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/users', users);
 app.use('/api/v1/movies', movies);
+app.use('/api/v1/collections', collections);
 
 const PORT = process.env.PORT;
 const server = app.listen(PORT, () => {

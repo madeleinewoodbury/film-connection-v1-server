@@ -25,9 +25,11 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
+    const { name, email, password } = req.body;
+
     try {
       // Check if user exists
-      let user = await User.findOne({ email: req.body.email });
+      let user = await User.findOne({ email });
       if (user) {
         return res
           .status(400)
@@ -35,9 +37,16 @@ router.post(
       }
 
       // Create new user
-      user = await User.create(req.body);
+      user = new User({ name, email, password });
+      await user.save();
+
+      // Create token
+      const token = user.getSignedJwtToken();
+
+      // user = await User.create(req.body);
       res.status(201).json({
         success: true,
+        token,
         data: user
       });
     } catch (err) {

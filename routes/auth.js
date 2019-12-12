@@ -13,7 +13,7 @@ router.get('/', auth, async (req, res) => {
     res.json(user);
   } catch (err) {
     console.log(err.message);
-    res.status(500).sen('Sever Error');
+    res.status(500).sen('Server Error');
   }
 });
 
