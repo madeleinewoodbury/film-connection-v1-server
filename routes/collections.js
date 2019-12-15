@@ -7,7 +7,7 @@ const FilmCollection = require('../models/FilmCollection');
 
 // @desc    Create a new Film Collection
 // @route   POST /api/v1/collections
-// @access  Public
+// @access  Private
 router.post(
   '/',
   auth,
@@ -42,7 +42,7 @@ router.post(
 
 // @desc    Update Film Collection
 // @route   PUT /api/v1/collections/:id
-// @access  Public
+// @access  Private
 router.put(
   '/:id',
   auth,
@@ -96,7 +96,7 @@ router.put(
 
 // @desc    Add movie to Film Collection
 // @route   POST /api/v1/collections/:id/:movieId
-// @access  Public
+// @access  Private
 router.post('/:id/:movieId', auth, async (req, res) => {
   try {
     const response = await axios.get('http://www.omdbapi.com', {
@@ -140,7 +140,26 @@ router.post('/:id/:movieId', auth, async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const collections = await FilmCollection.find();
+    const collections = await FilmCollection.find().populate('user', 'name');
+    if (!collections) {
+      return res.status(400).json({ msg: 'No collections found' });
+    }
+
+    res.json(collections);
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+});
+
+// @desc    Get current user's Film Collections
+// @route   GET /api/v1/collections/me
+// @access  Private
+router.get('/me', auth, async (req, res) => {
+  try {
+    const collections = await FilmCollection.findOne({
+      user: req.user.id
+    }).populate('user', ['name']);
+
     if (!collections) {
       return res.status(400).json({ msg: 'No collections found' });
     }
@@ -156,7 +175,9 @@ router.get('/', async (req, res) => {
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
-    const collection = await FilmCollection.findById(req.params.id);
+    const collection = await FilmCollection.findById(
+      req.params.id
+    ).populate('user', ['name']);
     if (!collection) {
       return res.status(400).json({ msg: 'Collection not found' });
     }
