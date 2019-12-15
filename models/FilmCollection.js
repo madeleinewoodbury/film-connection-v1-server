@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const FilmCollectionSchema = new mongoose.Schema({
-  name: {
+  title: {
     type: String,
     required: [true, 'Please add a name'],
     trim: true,

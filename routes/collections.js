@@ -12,7 +12,7 @@ router.post(
   '/',
   auth,
   [
-    check('name', 'Name is required')
+    check('title', 'Title is required')
       .not()
       .isEmpty(),
     check('description', 'Description is required')
@@ -24,10 +24,9 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    3;
     try {
       const newCollection = new FilmCollection({
-        name: req.body.name,
+        title: req.body.title,
         description: req.body.description,
         user: req.user.id
       });
@@ -35,6 +34,60 @@ router.post(
       const collection = await newCollection.save();
       res.json(collection);
     } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
+    }
+  }
+);
+
+// @desc    Update Film Collection
+// @route   PUT /api/v1/collections/:id
+// @access  Public
+router.put(
+  '/:id',
+  auth,
+  [
+    check('title', 'Title is required')
+      .not()
+      .isEmpty(),
+    check('description', 'Description is required')
+      .not()
+      .isEmpty()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { title, description } = req.body;
+    const collectionFields = {};
+    if (title) collectionFields.title = title;
+    if (description) collectionFields.description = description;
+
+    try {
+      let collection = await FilmCollection.findById(req.params.id);
+      if (!collection) {
+        res.status(400).json({ msg: 'Collection not found' });
+      }
+
+      // Check user
+      if (collection.user._id.toString() !== req.user.id) {
+        return res.status(401).json({ msg: 'Not authorized' });
+      }
+
+      // Update the new recipe
+      collection = await FilmCollection.findByIdAndUpdate(
+        { _id: req.params.id },
+        { $set: collectionFields },
+        { new: true }
+      );
+
+      res.json(collection);
+    } catch (err) {
+      if (err.kind == 'ObjectId') {
+        return res.status(400).json({ msg: 'Collection not found' });
+      }
       console.error(err.message);
       res.status(500).send('Server Error');
     }
@@ -72,6 +125,41 @@ router.post('/:id/:movieId', auth, async (req, res) => {
 
     collection.films.unshift(newFilm);
     await collection.save();
+
+    res.json(collection);
+  } catch (err) {
+    if (err.kind == 'ObjectId') {
+      return res.status(400).json({ msg: 'Collection not found' });
+    }
+    res.status(500).send('Server Error');
+  }
+});
+
+// @desc    Get all Film Collections
+// @route   GET /api/v1/collections
+// @access  Public
+router.get('/', async (req, res) => {
+  try {
+    const collections = await FilmCollection.find();
+    if (!collections) {
+      return res.status(400).json({ msg: 'No collections found' });
+    }
+
+    res.json(collections);
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+});
+
+// @desc    Get Film Collection by id
+// @route   GET /api/v1/collections/:id
+// @access  Public
+router.get('/:id', async (req, res) => {
+  try {
+    const collection = await FilmCollection.findById(req.params.id);
+    if (!collection) {
+      return res.status(400).json({ msg: 'Collection not found' });
+    }
 
     res.json(collection);
   } catch (err) {
